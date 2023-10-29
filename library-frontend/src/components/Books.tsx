@@ -1,11 +1,19 @@
 import { Book } from "../interfaces"
+import { useQuery } from "@apollo/client"
+import { ALL_BOOKS } from "../gql_utils/queries"
 
 const Books = ({ show }: { show: boolean }) => {
+  const result = useQuery(ALL_BOOKS)
+
   if (!show) {
     return null
   }
 
-  const books: Book[] = []
+  if (result.loading) {
+    return <div>loading...</div>
+  }
+
+  const books: Book[] = result.data.allBooks
 
   return (
     <div>

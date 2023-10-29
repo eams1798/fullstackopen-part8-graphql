@@ -1,11 +1,26 @@
+import { useMutation } from '@apollo/client'
+import { ADD_BOOK } from '../gql_utils/mutations'
+import { ALL_AUTHORS, ALL_BOOKS } from '../gql_utils/queries'
 import { useState } from 'react'
 
-const NewBook = ({ show }: { show: boolean }) => {
+interface INewBookProps {
+  show: boolean
+  onAddBook: () => void
+}
+
+const NewBook = ({ show, onAddBook }: INewBookProps) => {
   const [title, setTitle] = useState<string>('')
   const [author, setAuthor] = useState<string>('')
   const [published, setPublished] = useState<string>('')
   const [genre, setGenre] = useState<string>('')
   const [genres, setGenres] = useState<string[]>([])
+
+  const [createPerson] = useMutation(ADD_BOOK, {
+    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    onError: (error) => {
+      console.log(error.graphQLErrors[0].message)
+    },
+  })
 
   if (!show) {
     return null
@@ -14,13 +29,25 @@ const NewBook = ({ show }: { show: boolean }) => {
   const submit = async (event: React.SyntheticEvent) => {
     event.preventDefault()
 
-    console.log('add book...')
+    const result = await createPerson({
+      variables: {
+        title,
+        author,
+        published: Number(published),
+        genres,
+      },
+    })
 
-    setTitle('')
-    setPublished('')
-    setAuthor('')
-    setGenres([])
-    setGenre('')
+    if (!result.errors) {
+      onAddBook()
+      setTitle('')
+      setPublished('')
+      setAuthor('')
+      setGenres([])
+      setGenre('')
+    }
+
+
   }
 
   const addGenre = () => {
@@ -30,7 +57,7 @@ const NewBook = ({ show }: { show: boolean }) => {
 
   return (
     <div>
-      <form onSubmit={submit}>
+      <form onSubmit={(e) => void submit(e)}>
         <div>
           title
           <input

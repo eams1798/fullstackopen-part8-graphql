@@ -91,7 +91,7 @@ const resolvers: Resolvers = {
   },
   Author: {
     name: (root, args) => root.name,
-    born: (root, args) => root.born || null,
+    born: (root, args) => root.born === 0 ? 0 : root.born || null,
     id: (root, args) => root.id,
     bookCount: (root, args) => {
       return books.filter((book) => {
@@ -119,6 +119,14 @@ const resolvers: Resolvers = {
   Mutation: {
     addBook: (root, args) => {
       const titleOfBooks = books.map((book) => book.title)
+      if (!args.title || !args.author || !args.published) {
+        throw new GraphQLError('Missing required fields', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            status: 400
+          }
+        })
+      }
       if (titleOfBooks.includes(args.title)) {
         throw new GraphQLError('Book already exists', {
           extensions: {
@@ -156,7 +164,9 @@ const resolvers: Resolvers = {
         })
       }
       const auhorIndex = authors.findIndex((author) => author.name === args.name)
-      authors[auhorIndex].born = args.setBornTo
+      if (args.setBornTo === 0 ) authors[auhorIndex].born = 0
+      else authors[auhorIndex].born = args.setBornTo
+
       return author
     }
   }

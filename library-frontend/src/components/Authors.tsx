@@ -1,10 +1,25 @@
+import { useQuery } from "@apollo/client"
 import { Author } from "../interfaces"
+import { ALL_AUTHORS } from "../gql_utils/queries"
+import SetAuthorBirthYear from "./SetAuthorBirthYear"
 
-const Authors = ({ show }: { show: boolean }) => {
+interface INewBookProps {
+  show: boolean
+  onUpdateAuthor: () => void
+}
+
+const Authors = ({ show, onUpdateAuthor }: INewBookProps) => {
+  const result = useQuery(ALL_AUTHORS)
+
   if (!show) {
     return null
   }
-  const authors: Author[] = []
+
+  if (result.loading) {
+    return <div>loading...</div>
+  }
+
+  const authors: Author[] = result.data.allAuthors
 
   return (
     <div>
@@ -17,7 +32,7 @@ const Authors = ({ show }: { show: boolean }) => {
             <th>books</th>
           </tr>
           {authors.map((a) => (
-            <tr key={a.name}>
+            <tr key={a.id}>
               <td>{a.name}</td>
               <td>{a.born}</td>
               <td>{a.bookCount}</td>
@@ -25,6 +40,7 @@ const Authors = ({ show }: { show: boolean }) => {
           ))}
         </tbody>
       </table>
+      <SetAuthorBirthYear authors={authors} onUpdateAuthor={onUpdateAuthor} />
     </div>
   )
 }

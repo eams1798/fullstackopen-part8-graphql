@@ -6,6 +6,14 @@ import NewBook from './components/NewBook'
 const App = () => {
   const [page, setPage] = useState<string>('authors')
 
+  const onAddBook = () => {
+    setPage('books')
+  }
+
+  const onUpdateAuthor = () => {
+    setPage('authors')
+  }
+
   return (
     <div>
       <div>
@@ -14,11 +22,11 @@ const App = () => {
         <button onClick={() => setPage('add')}>add book</button>
       </div>
 
-      <Authors show={page === 'authors'} />
+      <Authors show={page === 'authors'} onUpdateAuthor={onUpdateAuthor} />
 
       <Books show={page === 'books'} />
 
-      <NewBook show={page === 'add'} />
+      <NewBook show={page === 'add'} onAddBook={onAddBook} />
     </div>
   )
 }
