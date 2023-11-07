@@ -1,16 +1,26 @@
-type Book {
-  title: String!
-  published: Int!
-  author: String!
-  id: ID!
-  genres: [String!]
-}
-
 type Author {
   name: String!
   born: Int
   bookCount: Int
   id: ID!
+}
+
+type Book {
+  title: String!
+  published: Int!
+  author: Author!
+  id: ID!
+  genres: [String!]
+}
+
+type User {
+  username: String!
+  favoriteGenre: String!
+  id: ID!
+}
+
+type Token {
+  value: String!
 }
 
 type Query {
@@ -21,6 +31,7 @@ type Query {
     genre: String
   ): [Book]
   allAuthors: [Author]
+  me: User
 }
 
 type Mutation {
@@ -29,9 +40,17 @@ type Mutation {
     published: Int!
     author: String!
     genres: [String!]!
-  ): Book,
+  ): Book!,
   editAuthor(
     name: String!
     setBornTo: Int!
-  ): Author
+  ): Author,
+  createUser(
+    username: String!
+    favoriteGenre: String!
+  ): User
+  login(
+    username: String!
+    password: String!
+  ): Token
 }

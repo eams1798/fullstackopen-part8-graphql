@@ -1,85 +1,10 @@
-import { Resolvers } from "./types/resolvers_generated"
-import { Author, Book } from "./types"
+import { Author, Resolvers } from "./types/resolvers_generated"
 import { v4 as uuidv4 } from 'uuid';
 import { GraphQLError } from "graphql";
-
-let authors: Author[] = [
-  {
-    name: 'Robert Martin',
-    id: "afa51ab0-344d-11e9-a414-719c6709cf3e",
-    born: 1952,
-  },
-  {
-    name: 'Martin Fowler',
-    id: "afa5b6f0-344d-11e9-a414-719c6709cf3e",
-    born: 1963
-  },
-  {
-    name: 'Fyodor Dostoevsky',
-    id: "afa5b6f1-344d-11e9-a414-719c6709cf3e",
-    born: 1821
-  },
-  { 
-    name: 'Joshua Kerievsky', // birthyear not known
-    id: "afa5b6f2-344d-11e9-a414-719c6709cf3e",
-  },
-  { 
-    name: 'Sandi Metz', // birthyear not known
-    id: "afa5b6f3-344d-11e9-a414-719c6709cf3e",
-  },
-]
-
-let books: Book[] = [
-  {
-    title: 'Clean Code',
-    published: 2008,
-    author: 'Robert Martin',
-    id: "afa5b6f4-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring']
-  },
-  {
-    title: 'Agile software development',
-    published: 2002,
-    author: 'Robert Martin',
-    id: "afa5b6f5-344d-11e9-a414-719c6709cf3e",
-    genres: ['agile', 'patterns', 'design']
-  },
-  {
-    title: 'Refactoring, edition 2',
-    published: 2018,
-    author: 'Martin Fowler',
-    id: "afa5de00-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring']
-  },
-  {
-    title: 'Refactoring to patterns',
-    published: 2008,
-    author: 'Joshua Kerievsky',
-    id: "afa5de01-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring', 'patterns']
-  },  
-  {
-    title: 'Practical Object-Oriented Design, An Agile Primer Using Ruby',
-    published: 2012,
-    author: 'Sandi Metz',
-    id: "afa5de02-344d-11e9-a414-719c6709cf3e",
-    genres: ['refactoring', 'design']
-  },
-  {
-    title: 'Crime and punishment',
-    published: 1866,
-    author: 'Fyodor Dostoevsky',
-    id: "afa5de03-344d-11e9-a414-719c6709cf3e",
-    genres: ['classic', 'crime']
-  },
-  {
-    title: 'The Demon ',
-    published: 1872,
-    author: 'Fyodor Dostoevsky',
-    id: "afa5de04-344d-11e9-a414-719c6709cf3e",
-    genres: ['classic', 'revolution']
-  },
-]
+import Books from "./models/Book"
+import Authors from "./models/Author"
+import User from "./models/User";
+import jwt from "jsonwebtoken";
 
 const resolvers: Resolvers = {
   Book: {
@@ -91,35 +16,35 @@ const resolvers: Resolvers = {
   },
   Author: {
     name: (root, args) => root.name,
-    born: (root, args) => root.born === 0 ? 0 : root.born || null,
+    born: (root, args) => root.born || null,
     id: (root, args) => root.id,
-    bookCount: (root, args) => {
-      return books.filter((book) => {
-        return book.author === root.name
-      }).length || 0
-    }
+    bookCount: async (root, args) => await Books.countDocuments({ author: root.id })
   },
   Query: {
-    bookCount: () => books.length,
-    allBooks: (root, args) => {
-      return books.filter((book) => {
-        if (args.author && args.genre) {
-          return book.author === args.author && book.genres.includes(args.genre!);
-        } else if (args.author) {
-          return book.author === args.author;
-        } else if (args.genre) {
-          return book.genres.includes(args.genre!);
-        }
-        return true;
-      });
+    bookCount: async () => await Books.countDocuments({}),
+    allBooks: async (root, args) => {
+      const books = (await Books.find({})
+                      .populate('author'))
+                      .map((book) => ({ ...book.toObject(), author: (book.author as Author), id: book.id.toString() }))
+
+      if (args.author && args.genre) {
+        return books.filter((book) => (book.author as Author).name === args.author && book.genres.includes(args.genre!))
+      } else if (args.author) {
+        return books.filter((book) => (book.author as Author).name === args.author)
+      } else if (args.genre) {
+        return books.filter((book) => book.genres.includes(args.genre!))
+      } else return books
+      
     },
-    authorCount: (root, args) => authors.length,
-    allAuthors: () => authors
+    authorCount: async (root, args) => await Authors.countDocuments({}),
+    allAuthors: async () => await Authors.find({}),
+    me: async (root, args, context) => {
+      return context.currentUser || null
+    }
   },
   Mutation: {
-    addBook: (root, args) => {
-      const titleOfBooks = books.map((book) => book.title)
-      if (!args.title || !args.author || !args.published) {
+    createUser: async (root, args) => {
+      if (!args.username || !args.favoriteGenre) {
         throw new GraphQLError('Missing required fields', {
           extensions: {
             code: 'BAD_USER_INPUT',
@@ -127,47 +52,141 @@ const resolvers: Resolvers = {
           }
         })
       }
-      if (titleOfBooks.includes(args.title)) {
-        throw new GraphQLError('Book already exists', {
+      try {
+        const user = new User({ username: args.username, favoriteGenre: args.favoriteGenre })
+        const savedUser = await user.save()
+        
+        return savedUser
+      } catch (error) {
+        throw new GraphQLError('Failed to create user', {
           extensions: {
-            code: 'CONFLICT',
-            status: 409,
-            invalidArgs: args.title
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.username,
+            status: 400,
+            error
           }
         })
       }
-      const book = {
-        title: args.title,
-        published: args.published,
-        author: args.author,
-        id: uuidv4(),
-        genres: args.genres
-      }
-      books.push(book)
-      if (!authors.find((author) => author.name === args.author)) {
-        authors.push({
-          name: args.author,
-          id: uuidv4(),
-        })
-      }
-      return book
     },
-    editAuthor: (root, args) => {
-      const author = authors.find((author) => author.name === args.name)
-      if (!author) {
-        throw new GraphQLError('Author not found', {
+    login: async (root, args) => {
+      const user = await User.findOne({ username: args.username })
+  
+      if ( !user || args.password !== 'sekret' ) {
+        throw new GraphQLError('wrong credentials', {
           extensions: {
-            code: 'NOT_FOUND',
-            status: 404,
-            invalidArgs: args.name
+            code: 'BAD_USER_INPUT'
           }
-        })
+        })        
       }
-      const auhorIndex = authors.findIndex((author) => author.name === args.name)
-      if (args.setBornTo === 0 ) authors[auhorIndex].born = 0
-      else authors[auhorIndex].born = args.setBornTo
+  
+      const userForToken = {
+        username: user.username,
+        id: user._id,
+      }
+  
+      return { value: jwt.sign(userForToken, process.env.JWT_SECRET!) }
+    },
+    addBook: async (root, args, context) => {
+      const asyncMethod = async () => {
+        const currentUser = context.currentUser
+        if (!currentUser) {
+          throw new GraphQLError('Unauthenticated', {
+            extensions: {
+              code: 'UNAUTHENTICATED',
+              status: 401
+            }
+          })
+        }
 
-      return author
+        if (!args.title || !args.author || !args.published) {
+          throw new GraphQLError('Missing required fields', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              status: 400
+            }
+          })
+        }
+
+        const books = await Books.find({})
+        const authors = await Authors.find({})
+        const titleOfBooks = books.map((book) => book.title)
+
+        if (titleOfBooks.includes(args.title)) {
+          throw new GraphQLError('Book already exists', {
+            extensions: {
+              code: 'CONFLICT',
+              status: 409,
+              invalidArgs: args.title
+            }
+          })
+        }
+
+        if (!authors.find((author) => author.name === args.author)) {
+          await Authors.create({ name: args.author })
+        }
+
+        const bookAuthor = await Authors.findOne({ name: args.author })
+
+        const book = new Books({
+          title: args.title,
+          published: args.published,
+          author: bookAuthor!._id,
+          genres: args.genres
+        })
+
+        const newBook = await (await book.save()).populate('author')
+        
+        const reuturnedBook = {...newBook.toObject(), author: (newBook.author as Author), id: newBook.id.toString() }
+        console.log("reuturnedBook", reuturnedBook);
+        return reuturnedBook
+      }
+
+      const result = await asyncMethod()
+      console.log('result', result);
+      
+      return result
+    },
+    editAuthor: (root, args, context) => {
+      const asyncMethod = async () => {
+        const currentUser = context.currentUser
+        if (!currentUser) {
+          throw new GraphQLError('Unauthenticated', {
+            extensions: {
+              code: 'UNAUTHENTICATED',
+              status: 401
+            }
+          })
+        }
+        
+
+        if (!args.name || !args.setBornTo) {
+          throw new GraphQLError('Missing required fields', {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              status: 400
+            }
+          })
+        }
+        
+        const author = await Authors.findOne({ name: args.name })
+
+        if (!author) {
+          throw new GraphQLError('Author not found', {
+            extensions: {
+              code: 'NOT_FOUND',
+              status: 404,
+              invalidArgs: args.name
+            }
+          })
+        }
+
+        const updatedAuthor = await Authors.findOneAndUpdate({ name: args.name }, { born: args.setBornTo }, { new: true })
+        console.log("updatedAuthor", updatedAuthor);
+        
+        return updatedAuthor
+      }
+
+      return asyncMethod()
     }
   }
 }

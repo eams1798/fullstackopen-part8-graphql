@@ -26,7 +26,7 @@ export type Author = {
 
 export type Book = {
   __typename?: 'Book';
-  author: Scalars['String']['output'];
+  author: Author;
   genres?: Maybe<Array<Scalars['String']['output']>>;
   id: Scalars['ID']['output'];
   published: Scalars['Int']['output'];
@@ -35,8 +35,10 @@ export type Book = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  addBook?: Maybe<Book>;
+  addBook: Book;
+  createUser?: Maybe<User>;
   editAuthor?: Maybe<Author>;
+  login?: Maybe<Token>;
 };
 
 
@@ -48,9 +50,21 @@ export type MutationAddBookArgs = {
 };
 
 
+export type MutationCreateUserArgs = {
+  favoriteGenre: Scalars['String']['input'];
+  username: Scalars['String']['input'];
+};
+
+
 export type MutationEditAuthorArgs = {
   name: Scalars['String']['input'];
   setBornTo: Scalars['Int']['input'];
+};
+
+
+export type MutationLoginArgs = {
+  password: Scalars['String']['input'];
+  username: Scalars['String']['input'];
 };
 
 export type Query = {
@@ -59,12 +73,25 @@ export type Query = {
   allBooks?: Maybe<Array<Maybe<Book>>>;
   authorCount: Scalars['Int']['output'];
   bookCount: Scalars['Int']['output'];
+  me?: Maybe<User>;
 };
 
 
 export type QueryAllBooksArgs = {
   author?: InputMaybe<Scalars['String']['input']>;
   genre?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type Token = {
+  __typename?: 'Token';
+  value: Scalars['String']['output'];
+};
+
+export type User = {
+  __typename?: 'User';
+  favoriteGenre: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  username: Scalars['String']['output'];
 };
 
 
@@ -146,6 +173,8 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  Token: ResolverTypeWrapper<Token>;
+  User: ResolverTypeWrapper<User>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -158,6 +187,8 @@ export type ResolversParentTypes = {
   Mutation: {};
   Query: {};
   String: Scalars['String']['output'];
+  Token: Token;
+  User: User;
 };
 
 export type AuthorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Author'] = ResolversParentTypes['Author']> = {
@@ -169,7 +200,7 @@ export type AuthorResolvers<ContextType = any, ParentType extends ResolversParen
 };
 
 export type BookResolvers<ContextType = any, ParentType extends ResolversParentTypes['Book'] = ResolversParentTypes['Book']> = {
-  author?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  author?: Resolver<ResolversTypes['Author'], ParentType, ContextType>;
   genres?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   published?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -178,8 +209,10 @@ export type BookResolvers<ContextType = any, ParentType extends ResolversParentT
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  addBook?: Resolver<Maybe<ResolversTypes['Book']>, ParentType, ContextType, RequireFields<MutationAddBookArgs, 'author' | 'genres' | 'published' | 'title'>>;
+  addBook?: Resolver<ResolversTypes['Book'], ParentType, ContextType, RequireFields<MutationAddBookArgs, 'author' | 'genres' | 'published' | 'title'>>;
+  createUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'favoriteGenre' | 'username'>>;
   editAuthor?: Resolver<Maybe<ResolversTypes['Author']>, ParentType, ContextType, RequireFields<MutationEditAuthorArgs, 'name' | 'setBornTo'>>;
+  login?: Resolver<Maybe<ResolversTypes['Token']>, ParentType, ContextType, RequireFields<MutationLoginArgs, 'password' | 'username'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
@@ -187,6 +220,19 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   allBooks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Book']>>>, ParentType, ContextType, Partial<QueryAllBooksArgs>>;
   authorCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   bookCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+};
+
+export type TokenResolvers<ContextType = any, ParentType extends ResolversParentTypes['Token'] = ResolversParentTypes['Token']> = {
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  favoriteGenre?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
@@ -194,5 +240,7 @@ export type Resolvers<ContextType = any> = {
   Book?: BookResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Token?: TokenResolvers<ContextType>;
+  User?: UserResolvers<ContextType>;
 };
 
