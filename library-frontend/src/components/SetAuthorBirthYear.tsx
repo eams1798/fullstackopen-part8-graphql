@@ -1,22 +1,26 @@
 import { useMutation } from "@apollo/client"
 import { SET_BIRTH_YEAR } from "../gql_utils/mutations"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { ALL_AUTHORS } from "../gql_utils/queries"
-import { Author } from "../interfaces"
+import { Author, SetBYResponse, SetBYVariables } from "../interfaces"
 
 interface ISetAuthorBYProps {
   authors: Author[],
   onUpdateAuthor: () => void
+  setNotification: ({ type, message }: { type: string, message: string }) => void
 }
 
-const SetAuthorBirthYear = ({ authors, onUpdateAuthor }: ISetAuthorBYProps) => {
+const SetAuthorBirthYear = ({ authors, onUpdateAuthor, setNotification }: ISetAuthorBYProps) => {
   const selectRef = useRef<HTMLSelectElement>(null)
   const [selectedValue, setSelectedValue] = useState<string>(authors[0]? authors[0].name : "")
   const [inputYear, setInputYear] = useState<string>("")
-  const [setAuthorBirthYear] = useMutation(SET_BIRTH_YEAR, {
+  const [setAuthorBirthYear] = useMutation<SetBYResponse, SetBYVariables>(SET_BIRTH_YEAR, {
     refetchQueries: [{ query: ALL_AUTHORS }],
     onError: (error) => {
-      console.log(error.graphQLErrors[0].message)
+      setNotification({
+        type: 'error',
+        message: error.graphQLErrors[0].message
+      })
     },
   })
 
@@ -39,10 +43,6 @@ const SetAuthorBirthYear = ({ authors, onUpdateAuthor }: ISetAuthorBYProps) => {
       setInputYear("")
     }
   }
-
-  useEffect(() => {
-    console.log(selectedValue)
-  }, [selectedValue])
 
   return (
     <div>

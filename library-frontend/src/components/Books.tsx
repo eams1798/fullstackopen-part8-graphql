@@ -3,7 +3,11 @@ import { useQuery } from "@apollo/client"
 import { ALL_BOOKS } from "../gql_utils/queries"
 
 const Books = ({ show }: { show: boolean }) => {
-  const result = useQuery(ALL_BOOKS)
+  const result = useQuery<{ allBooks: Book[] }>(ALL_BOOKS, {
+    onError: (error) => {
+      console.log(error)
+    }
+  })
 
   if (!show) {
     return null
@@ -13,7 +17,7 @@ const Books = ({ show }: { show: boolean }) => {
     return <div>loading...</div>
   }
 
-  const books: Book[] = result.data.allBooks
+  const books = result.data!.allBooks
 
   return (
     <div>
@@ -29,7 +33,7 @@ const Books = ({ show }: { show: boolean }) => {
           {books.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
-              <td>{a.author}</td>
+              <td>{a.author.name}</td>
               <td>{a.published}</td>
             </tr>
           ))}

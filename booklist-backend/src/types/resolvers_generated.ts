@@ -58,7 +58,7 @@ export type MutationCreateUserArgs = {
 
 export type MutationEditAuthorArgs = {
   name: Scalars['String']['input'];
-  setBornTo: Scalars['Int']['input'];
+  setBornTo?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -211,7 +211,7 @@ export type BookResolvers<ContextType = any, ParentType extends ResolversParentT
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   addBook?: Resolver<ResolversTypes['Book'], ParentType, ContextType, RequireFields<MutationAddBookArgs, 'author' | 'genres' | 'published' | 'title'>>;
   createUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'favoriteGenre' | 'username'>>;
-  editAuthor?: Resolver<Maybe<ResolversTypes['Author']>, ParentType, ContextType, RequireFields<MutationEditAuthorArgs, 'name' | 'setBornTo'>>;
+  editAuthor?: Resolver<Maybe<ResolversTypes['Author']>, ParentType, ContextType, RequireFields<MutationEditAuthorArgs, 'name'>>;
   login?: Resolver<Maybe<ResolversTypes['Token']>, ParentType, ContextType, RequireFields<MutationLoginArgs, 'password' | 'username'>>;
 };
 

@@ -3,13 +3,15 @@ import { Author } from "../interfaces"
 import { ALL_AUTHORS } from "../gql_utils/queries"
 import SetAuthorBirthYear from "./SetAuthorBirthYear"
 
-interface INewBookProps {
+interface IAuthorsProps {
   show: boolean
   onUpdateAuthor: () => void
+  setNotification: ({ type, message }: { type: string, message: string }) => void
+  token: string
 }
 
-const Authors = ({ show, onUpdateAuthor }: INewBookProps) => {
-  const result = useQuery(ALL_AUTHORS)
+const Authors = ({ show, onUpdateAuthor, setNotification, token }: IAuthorsProps) => {
+  const result = useQuery<{ allAuthors: Author[] }>(ALL_AUTHORS)
 
   if (!show) {
     return null
@@ -19,7 +21,7 @@ const Authors = ({ show, onUpdateAuthor }: INewBookProps) => {
     return <div>loading...</div>
   }
 
-  const authors: Author[] = result.data.allAuthors
+  const authors = result.data!.allAuthors
 
   return (
     <div>
@@ -40,7 +42,7 @@ const Authors = ({ show, onUpdateAuthor }: INewBookProps) => {
           ))}
         </tbody>
       </table>
-      <SetAuthorBirthYear authors={authors} onUpdateAuthor={onUpdateAuthor} />
+      {token && <SetAuthorBirthYear authors={authors} onUpdateAuthor={onUpdateAuthor} setNotification={setNotification} />}
     </div>
   )
 }

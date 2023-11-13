@@ -159,7 +159,7 @@ const resolvers: Resolvers = {
         }
         
 
-        if (!args.name || !args.setBornTo) {
+        if (!args.name) {
           throw new GraphQLError('Missing required fields', {
             extensions: {
               code: 'BAD_USER_INPUT',

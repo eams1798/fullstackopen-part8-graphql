@@ -33,7 +33,7 @@ const server = new ApolloServer<any /*fix Context type*/>({
 })
 
 startStandaloneServer(server, {
-  listen: { port: 4003 },
+  listen: { port: 4000 },
   context: async ({ req, res }) => {
     const auth = req ? req.headers.authorization : null
     if (auth && auth.startsWith('Bearer ')) {

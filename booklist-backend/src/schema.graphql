@@ -43,7 +43,7 @@ type Mutation {
   ): Book!,
   editAuthor(
     name: String!
-    setBornTo: Int!
+    setBornTo: Int
   ): Author,
   createUser(
     username: String!
