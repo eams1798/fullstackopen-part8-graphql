@@ -21,6 +21,7 @@ type User {
 
 type Token {
   value: String!
+  user: User
 }
 
 type Query {

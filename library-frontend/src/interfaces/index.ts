@@ -1,3 +1,8 @@
+export interface MyUser {
+  username: string
+  favoriteGenre: string
+}
+
 export interface Author {
   name: string,
   id: string,
@@ -21,6 +26,7 @@ export interface LoginVariables {
 export interface LoginResponse {
   login: {
     value: string;
+    user: MyUser
   };
 }
 
@@ -52,9 +58,4 @@ export interface SetBYResponse {
 export interface NotifProperties {
   type: string
   message: string
-}
-
-export interface MyUser {
-  username: string
-  favoriteGenre: string
 }

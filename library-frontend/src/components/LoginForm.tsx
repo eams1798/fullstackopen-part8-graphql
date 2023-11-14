@@ -2,22 +2,21 @@
 import { useMutation } from "@apollo/client"
 import { useState, useEffect } from "react"
 import { LOGIN } from "../gql_utils/mutations"
-import { LoginResponse, LoginVariables } from "../interfaces"
-import { ME } from "../gql_utils/queries"
+import { LoginResponse, LoginVariables, MyUser } from "../interfaces"
 
 interface ILoginFormProps {
   show: boolean
   setNotification: ({ type, message }: { type: string, message: string }) => void
   setToken: (token: string) => void
+  setUser: (user: MyUser | null) => void
   onLogin: () => void
 }
 
-const LoginForm = ({ show, setNotification, setToken, onLogin }: ILoginFormProps) => {
+const LoginForm = ({ show, setNotification, setToken, setUser, onLogin }: ILoginFormProps) => {
   const [username, setUsername] = useState<string>('')
   const [password, setPassword] = useState<string>('')
 
   const [login, result] = useMutation<LoginResponse, LoginVariables>(LOGIN, {
-    refetchQueries: [{ query: ME }],
     onError: (error) => {
       setNotification({
         type: 'error',
@@ -29,8 +28,11 @@ const LoginForm = ({ show, setNotification, setToken, onLogin }: ILoginFormProps
   useEffect(() => {
     if (result.data) {
       const token = result.data.login.value
+      const user = result.data.login.user
       setToken(token)
+      setUser(user)
       localStorage.setItem('booklist-user-token', token)
+      localStorage.setItem('booklist-user', JSON.stringify(user))
       setNotification({
         type: 'success',
         message: `welcome ${username}`

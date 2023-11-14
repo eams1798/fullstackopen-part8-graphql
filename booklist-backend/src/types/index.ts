@@ -22,6 +22,11 @@ export interface User {
   /* passwordHash: string */
 }
 
+export interface Token {
+  value: string
+  user: User
+}
+
 export interface Context {
   [key: string]: any
 }

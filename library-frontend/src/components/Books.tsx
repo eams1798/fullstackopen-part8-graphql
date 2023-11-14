@@ -1,14 +1,20 @@
 import { Book, MyUser } from "../interfaces"
 import { useQuery } from "@apollo/client"
-import { ALL_BOOKS, ALL_GENRES, ME } from "../gql_utils/queries"
-import { useEffect, useState } from "react";
+import { ALL_BOOKS, ALL_GENRES } from "../gql_utils/queries"
+import { forwardRef, useImperativeHandle, useState } from "react";
 
 interface IBooksProps {
   show: boolean
+  user: MyUser | null
 }
 
-const Books = ({ show }: IBooksProps ) => {
+export interface IBooksRef {
+  setGenre: (genre: string | undefined) => void
+}
+
+const Books = forwardRef<IBooksRef, IBooksProps>(({ show, user }, ref ) => {
   const [genre, setGenre] = useState<string | undefined>(undefined);
+
   const resultBooks = useQuery<{ allBooks: Book[] }>(ALL_BOOKS, {
     variables: {
       genre
@@ -24,29 +30,21 @@ const Books = ({ show }: IBooksProps ) => {
     }
   })
 
-  const resultMe = useQuery<{ me: MyUser | null }>(ME, {
-    onError: (error) => {
-      console.log(error)
-    }
-  })
-
-  
-  useEffect(() => {
-    console.log(resultMe.data)
-  }, [resultMe.data])
+  useImperativeHandle(ref, () => ({
+    setGenre
+  }))
 
   if (!show) {
     return null
   }
 
-  if (resultBooks.loading || resultGenres.loading || resultMe.loading) {
+  if (resultBooks.loading || resultGenres.loading) {
     return <div>loading...</div>
   }
 
+
   const books = resultBooks.data!.allBooks
   const genres = resultGenres.data!.allGenres
-  const me = resultMe.data!.me
-
 
   const handleGenreChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setGenre(event.target.value || undefined);
@@ -56,15 +54,15 @@ const Books = ({ show }: IBooksProps ) => {
     <div>
       <h2>books</h2>
 
-      <select onChange={handleGenreChange}>
+      <select onChange={handleGenreChange} value={genre}>
         <option value="">All genres</option>
         {genres.map((genre) => (
           <option key={genre} value={genre}>
             {genre}
           </option>
         ))}
-        {me && (
-          <option value={me.favoriteGenre}>Your favorite genre: {me.favoriteGenre}</option>
+        {user && (
+          <option value={user.favoriteGenre}>Your favorite genre: {user.favoriteGenre}</option>
         )}
       </select>
 
@@ -86,6 +84,8 @@ const Books = ({ show }: IBooksProps ) => {
       </table>
     </div>
   )
-}
+})
+
+Books.displayName = "Books"
 
 export default Books

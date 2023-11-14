@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { NotifProperties } from './interfaces'
+import { useEffect, useRef, useState } from 'react'
+import { MyUser, NotifProperties } from './interfaces'
 import Authors from './components/Authors'
-import Books from './components/Books'
+import Books, { IBooksRef } from './components/Books'
 import NewBook from './components/NewBook'
 import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
@@ -10,11 +10,15 @@ import { useApolloClient } from '@apollo/client'
 const App = () => {
   const client = useApolloClient()
   const [token, setToken] = useState<string>('')
+  const [currentUser, setCurrentUser] = useState<MyUser | null>(null)
   const [page, setPage] = useState<string>('authors')
   const [notification, setNotification] = useState<NotifProperties>({ type: '', message: '' })
 
+  const BooksRef = useRef<IBooksRef>(null)
+
   const onAddBook = () => {
     setPage('books')
+    BooksRef.current!.setGenre(undefined)
   }
 
   const onUpdateAuthor = () => {
@@ -27,6 +31,7 @@ const App = () => {
 
   const logout = () => {
     setToken('')
+    setCurrentUser(null)
     localStorage.clear()
     client.resetStore()
     setPage('login')
@@ -34,8 +39,10 @@ const App = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('booklist-user-token')
-    if (token) {
+    const user = localStorage.getItem('booklist-user')
+    if (token && user && user !== 'undefined') {
       setToken(token)
+      setCurrentUser(JSON.parse(user))
     }
   }, [])
 
@@ -58,6 +65,7 @@ const App = () => {
       <LoginForm
         show={page === 'login'}
         setToken={setToken}
+        setUser={setCurrentUser}
         setNotification={setNotification}
         onLogin={onLogin} />
 
@@ -68,7 +76,9 @@ const App = () => {
         token={token} />
 
       <Books
-        show={page === 'books'} />
+        show={page === 'books'}
+        user={currentUser}
+        ref={BooksRef} />
 
       <NewBook
         show={page === 'new book'}

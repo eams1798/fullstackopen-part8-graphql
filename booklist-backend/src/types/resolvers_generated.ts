@@ -85,6 +85,7 @@ export type QueryAllBooksArgs = {
 
 export type Token = {
   __typename?: 'Token';
+  user?: Maybe<User>;
   value: Scalars['String']['output'];
 };
 
@@ -226,6 +227,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type TokenResolvers<ContextType = any, ParentType extends ResolversParentTypes['Token'] = ResolversParentTypes['Token']> = {
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
