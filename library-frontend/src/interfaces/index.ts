@@ -53,3 +53,8 @@ export interface NotifProperties {
   type: string
   message: string
 }
+
+export interface MyUser {
+  username: string
+  favoriteGenre: string
+}

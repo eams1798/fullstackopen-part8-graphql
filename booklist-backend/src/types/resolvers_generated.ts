@@ -71,6 +71,7 @@ export type Query = {
   __typename?: 'Query';
   allAuthors?: Maybe<Array<Maybe<Author>>>;
   allBooks?: Maybe<Array<Maybe<Book>>>;
+  allGenres?: Maybe<Array<Scalars['String']['output']>>;
   authorCount: Scalars['Int']['output'];
   bookCount: Scalars['Int']['output'];
   me?: Maybe<User>;
@@ -218,6 +219,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   allAuthors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Author']>>>, ParentType, ContextType>;
   allBooks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Book']>>>, ParentType, ContextType, Partial<QueryAllBooksArgs>>;
+  allGenres?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   authorCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   bookCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   me?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;

@@ -31,6 +31,7 @@ type Query {
     genre: String
   ): [Book]
   allAuthors: [Author]
+  allGenres: [String!]
   me: User
 }
 

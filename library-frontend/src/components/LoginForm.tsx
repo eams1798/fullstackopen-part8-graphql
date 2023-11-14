@@ -3,6 +3,7 @@ import { useMutation } from "@apollo/client"
 import { useState, useEffect } from "react"
 import { LOGIN } from "../gql_utils/mutations"
 import { LoginResponse, LoginVariables } from "../interfaces"
+import { ME } from "../gql_utils/queries"
 
 interface ILoginFormProps {
   show: boolean
@@ -16,6 +17,7 @@ const LoginForm = ({ show, setNotification, setToken, onLogin }: ILoginFormProps
   const [password, setPassword] = useState<string>('')
 
   const [login, result] = useMutation<LoginResponse, LoginVariables>(LOGIN, {
+    refetchQueries: [{ query: ME }],
     onError: (error) => {
       setNotification({
         type: 'error',

@@ -22,6 +22,7 @@ const resolvers: Resolvers = {
   },
   Query: {
     bookCount: async () => await Books.countDocuments({}),
+    authorCount: async (root, args) => await Authors.countDocuments({}),
     allBooks: async (root, args) => {
       const books = (await Books.find({})
                       .populate('author'))
@@ -36,8 +37,13 @@ const resolvers: Resolvers = {
       } else return books
       
     },
-    authorCount: async (root, args) => await Authors.countDocuments({}),
     allAuthors: async () => await Authors.find({}),
+    allGenres: async () => {
+      const books = await Books.find({})
+      const genres = books.map((book) => book.genres).flat()
+
+      return [...new Set(genres)]
+    },
     me: async (root, args, context) => {
       return context.currentUser || null
     }
