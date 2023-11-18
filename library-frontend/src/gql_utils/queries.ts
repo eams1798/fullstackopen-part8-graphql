@@ -1,29 +1,24 @@
 import { gql } from '@apollo/client'
+import { AUTHOR_DETAILS, BOOK_DETAILS } from './fragments'
 
 export const ALL_BOOKS = gql`
 query ($genre: String) {
   allBooks (
     genre: $genre
   ) {
-    title
-    published
-    author {
-      name
-    }
-    id
-    genres
+    ...BookDetails
   }
-}`
+}
+${BOOK_DETAILS}
+`
 
 export const ALL_AUTHORS = gql`
 query {
   allAuthors {
-    name
-    born
-    bookCount
-    id
+    ...AuthorDetails
   }
-}`
+}
+${AUTHOR_DETAILS}`
 
 export const ALL_GENRES = gql`
 query {

@@ -30,3 +30,7 @@ export interface Token {
 export interface Context {
   [key: string]: any
 }
+
+export interface Subscription {
+  bookAdded?: Book
+}

@@ -6,6 +6,10 @@ import Authors from "./models/Author"
 import User from "./models/User";
 import jwt from "jsonwebtoken";
 
+import { PubSub } from 'graphql-subscriptions'
+
+const pubsub = new PubSub()
+
 const resolvers: Resolvers = {
   Book: {
     title: (root, args) => root.title,
@@ -145,9 +149,9 @@ const resolvers: Resolvers = {
 
         const newBook = await (await book.save()).populate('author')
         
-        const reuturnedBook = {...newBook.toObject(), author: (newBook.author as Author), id: newBook.id.toString() }
-        console.log("reuturnedBook", reuturnedBook);
-        return reuturnedBook
+        const bookAdded = {...newBook.toObject(), author: (newBook.author as Author), id: newBook.id.toString() }
+        pubsub.publish('BOOK_ADDED', { bookAdded })
+        return bookAdded
       }
 
       const result = await asyncMethod()
@@ -196,6 +200,15 @@ const resolvers: Resolvers = {
       }
 
       return asyncMethod()
+    }
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => ({
+        [Symbol.asyncIterator]() {
+          return pubsub.asyncIterator(['BOOK_ADDED'])
+        }
+      })
     }
   }
 }

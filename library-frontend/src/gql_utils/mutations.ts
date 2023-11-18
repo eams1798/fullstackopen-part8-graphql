@@ -1,4 +1,5 @@
 import { gql } from '@apollo/client'
+import { AUTHOR_DETAILS, BOOK_DETAILS } from './fragments'
 
 export const ADD_BOOK = gql`
 mutation addBook($title: String!, $published: Int!, $author: String!, $genres: [String!]!) {
@@ -8,16 +9,10 @@ mutation addBook($title: String!, $published: Int!, $author: String!, $genres: [
     author: $author,
     genres: $genres,
   ) {
-    title
-    published
-    author {
-      name
-      born
-    }
-    id
-    genres
+    ....BookDetails
   }
-}`
+}
+${BOOK_DETAILS}`
 
 export const SET_BIRTH_YEAR = gql`
 mutation setBirthYear ($name: String!, $setBornTo: Int!) {
@@ -25,12 +20,10 @@ mutation setBirthYear ($name: String!, $setBornTo: Int!) {
     name: $name,
     setBornTo: $setBornTo
   ) {
-    name
-    born
-    bookCount
-    id
+    ...AuthorDetails
   }
-}`
+}
+${AUTHOR_DETAILS}`
 
 export const LOGIN = gql`
 mutation login($username: String!, $password: String!) {
