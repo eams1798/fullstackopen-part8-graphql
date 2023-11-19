@@ -5,7 +5,8 @@ import Books, { IBooksRef } from './components/Books'
 import NewBook from './components/NewBook'
 import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
-import { useApolloClient } from '@apollo/client'
+import { useApolloClient, useSubscription } from '@apollo/client'
+import { BOOK_ADDED } from './gql_utils/subscriptions'
 
 const App = () => {
   const client = useApolloClient()
@@ -36,6 +37,14 @@ const App = () => {
     client.resetStore()
     setPage('login')
   }
+
+  useSubscription(
+    BOOK_ADDED, {
+      onData: ({ data }) => {
+        console.log(data)
+      }
+    }
+  )
 
   useEffect(() => {
     const token = localStorage.getItem('booklist-user-token')
