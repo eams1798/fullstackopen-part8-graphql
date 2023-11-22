@@ -1,7 +1,7 @@
 import { useMutation } from "@apollo/client"
-import { SET_BIRTH_YEAR } from "../gql_utils/mutations"
+import { SET_BIRTH_YEAR } from "../utils/gql/mutations"
 import { useRef, useState } from "react"
-import { ALL_AUTHORS } from "../gql_utils/queries"
+import { ALL_AUTHORS } from "../utils/gql/queries"
 import { Author, SetBYResponse, SetBYVariables } from "../interfaces"
 
 interface ISetAuthorBYProps {

@@ -28,7 +28,7 @@ export interface Token {
 }
 
 export interface Context {
-  [key: string]: any
+  currentUser?: User
 }
 
 export interface Subscription {

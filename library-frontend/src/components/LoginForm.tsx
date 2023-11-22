@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useMutation } from "@apollo/client"
 import { useState, useEffect } from "react"
-import { LOGIN } from "../gql_utils/mutations"
+import { LOGIN } from "../utils/gql/mutations"
 import { LoginResponse, LoginVariables, MyUser } from "../interfaces"
 
 interface ILoginFormProps {

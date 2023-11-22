@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { MyUser, NotifProperties } from './interfaces'
+import { Book, MyUser, NotifProperties } from './interfaces'
 import Authors from './components/Authors'
 import Books, { IBooksRef } from './components/Books'
 import NewBook from './components/NewBook'
 import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
 import { useApolloClient, useSubscription } from '@apollo/client'
-import { BOOK_ADDED } from './gql_utils/subscriptions'
+import { BOOK_ADDED } from './utils/gql/subscriptions'
+import { ALL_AUTHORS, ALL_BOOKS, ALL_GENRES } from './utils/gql/queries'
+import { updateCache } from './utils/updateCache'
 
 const App = () => {
   const client = useApolloClient()
@@ -38,10 +40,14 @@ const App = () => {
     setPage('login')
   }
 
-  useSubscription(
+  useSubscription<{ bookAdded: Book }>(
     BOOK_ADDED, {
       onData: ({ data }) => {
-        console.log(data)
+        const addedBook = data.data!.bookAdded
+        updateCache(client.cache, { query: ALL_BOOKS }, addedBook)
+        updateCache(client.cache, { query: ALL_BOOKS, variables: { genre: addedBook.genres[0] } }, addedBook)
+        updateCache(client.cache, { query: ALL_AUTHORS }, addedBook.author)
+        updateCache(client.cache, { query: ALL_GENRES }, addedBook.genres)
       }
     }
   )

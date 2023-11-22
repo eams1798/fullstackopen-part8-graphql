@@ -44,13 +44,13 @@ const start = async () => {
 
   const wsServer = new WebSocketServer({
     server: httpServer,
-    path: '/graphql',
+    path: '/',
   })
 
   const schema = makeExecutableSchema({ typeDefs, resolvers })
   const serverCleanup = useServer({ schema }, wsServer)
 
-  const server = new ApolloServer<any /* Fixme */>({
+  const server = new ApolloServer<Context>({
     schema,
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -74,14 +74,18 @@ const start = async () => {
     express.json(),
     expressMiddleware(server, {
       context: async ({ req, res }) => {
+        const context: Context = { currentUser: undefined }
         const auth = req ? req.headers.authorization : null
         if (auth && auth.startsWith('Bearer ')) {
           const decodedToken = jwt.verify(
             auth.substring(7), process.env.JWT_SECRET!
           ) as jwt.JwtPayload
           const currentUser = await User.findById(decodedToken.id)
-          return { currentUser }
+          if (currentUser) {
+            context.currentUser = currentUser
+          }
         }
+        return context
       },
     }),
   )

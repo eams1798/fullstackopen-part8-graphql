@@ -1,6 +1,6 @@
 import { Book, MyUser } from "../interfaces"
 import { useQuery } from "@apollo/client"
-import { ALL_BOOKS, ALL_GENRES } from "../gql_utils/queries"
+import { ALL_BOOKS, ALL_GENRES } from "../utils/gql/queries"
 import { forwardRef, useImperativeHandle, useState } from "react";
 
 interface IBooksProps {

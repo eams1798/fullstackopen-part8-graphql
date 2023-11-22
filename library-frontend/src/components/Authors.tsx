@@ -1,6 +1,6 @@
 import { useQuery } from "@apollo/client"
 import { Author } from "../interfaces"
-import { ALL_AUTHORS } from "../gql_utils/queries"
+import { ALL_AUTHORS } from "../utils/gql/queries"
 import SetAuthorBirthYear from "./SetAuthorBirthYear"
 
 interface IAuthorsProps {

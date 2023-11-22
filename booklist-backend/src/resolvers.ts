@@ -22,7 +22,7 @@ const resolvers: Resolvers = {
     name: (root, args) => root.name,
     born: (root, args) => root.born || null,
     id: (root, args) => root.id,
-    bookCount: async (root, args) => await Books.countDocuments({ author: root.id })
+    bookCount: async (root, args) => root.bookCount || 0
   },
   Query: {
     bookCount: async () => await Books.countDocuments({}),
@@ -41,7 +41,16 @@ const resolvers: Resolvers = {
       } else return books
       
     },
-    allAuthors: async () => await Authors.find({}),
+    allAuthors: async () => {
+      const books = await Books.find({})
+      const authors = (await Authors
+                              .find({}))
+                              .map((author) => ({
+                                ...author.toObject(),
+                                id: author.id.toString(),
+                                bookCount: books.filter((book) => book.author.toString() === author.id.toString()).length}))
+      return authors
+    },
     allGenres: async () => {
       const books = await Books.find({})
       const genres = books.map((book) => book.genres).flat()
@@ -155,7 +164,6 @@ const resolvers: Resolvers = {
       }
 
       const result = await asyncMethod()
-      console.log('result', result);
       
       return result
     },
@@ -194,7 +202,6 @@ const resolvers: Resolvers = {
         }
 
         const updatedAuthor = await Authors.findOneAndUpdate({ name: args.name }, { born: args.setBornTo }, { new: true })
-        console.log("updatedAuthor", updatedAuthor);
         
         return updatedAuthor
       }

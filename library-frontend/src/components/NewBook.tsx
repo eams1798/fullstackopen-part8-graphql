@@ -1,6 +1,5 @@
 import { useMutation } from '@apollo/client'
-import { ADD_BOOK } from '../gql_utils/mutations'
-import { ALL_AUTHORS, ALL_BOOKS, ALL_GENRES } from '../gql_utils/queries'
+import { ADD_BOOK } from '../utils/gql/mutations'
 import { useState } from 'react'
 import { AddBookResponse, AddBookVariables } from '../interfaces'
 
@@ -18,13 +17,13 @@ const NewBook = ({ show, onAddBook, setNotification }: INewBookProps) => {
   const [genres, setGenres] = useState<string[]>([])
 
   const [createPerson] = useMutation<AddBookResponse, AddBookVariables>(ADD_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS, variables: { genre } }, { query: ALL_BOOKS }, { query: ALL_AUTHORS }, { query: ALL_GENRES }],
     onError: (error) => {
+      console.log(error)
       setNotification({
         type: 'error',
         message: error.graphQLErrors[0].message
       })
-    }
+    },
   })
 
   if (!show) {
@@ -44,12 +43,16 @@ const NewBook = ({ show, onAddBook, setNotification }: INewBookProps) => {
     })
 
     if (!result.errors) {
+      setNotification({
+        type: 'success',
+        message: `added ${title} by ${author}`
+      })
+
       onAddBook()
       setTitle('')
       setPublished('')
       setAuthor('')
       setGenres([])
-      setGenre('')
     }
   }
 
